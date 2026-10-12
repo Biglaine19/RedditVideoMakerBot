@@ -121,7 +121,7 @@ def render(ep: Path, scenes, total: float, subs: Path, audio: Path, out: Path):
     images = {s["n"]: cairo.ImageSurface.create_from_png(str(ep / f"scene{s['n']}.png")) for s in scenes}
     ffmpeg = subprocess.Popen(
         ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "bgra", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
-         "-i", str(audio), "-filter_complex", f"[0:v]ass={subs},format=yuv420p[v];[1:a]loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]",
+         "-i", str(audio), "-filter_complex", f"[0:v]unsharp=7:7:0.9,ass={subs},format=yuv420p[v];[1:a]loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]",
          "-map", "[v]", "-map", "[a]", "-t", f"{total:.2f}", "-c:v", "libx264", "-preset", "medium", "-crf", "19",
          "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(out)],
         stdin=subprocess.PIPE,
