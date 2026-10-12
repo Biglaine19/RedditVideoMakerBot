@@ -1,0 +1,30 @@
+# The Wrong Berry - Part 1
+hook: SHE GAVE BIRTH TO A BLUEBERRY?!
+voice narrator am_michael
+voice steve am_puck
+voice stella af_bella
+voice nurse af_nicole
+voice mrsblue af_jessica
+
+[1]
+narrator: Stella Strawberry was about to give birth to her very first baby.
+steve: Breathe, baby. I'm right here.
+[2 sting]
+narrator: But when Nurse Lemon handed them the baby...
+nurse: Congratulations! It's a healthy... blueberry.
+[3 shake]
+steve: A BLUEBERRY? Stella, we are STRAWBERRIES!
+[4]
+narrator: Steve remembered Stella's personal trainer. Brad. Brad Blueberry.
+steve: I knew those gym sessions were too long!
+[5]
+stella: Steve, I swear, nothing happened! I never even touched him!
+[6]
+narrator: Meanwhile, two rooms down, the Blueberry family was just as confused.
+mrsblue: Honey... why is our baby red?
+[7]
+narrator: The babies had been switched at birth. Everyone laughed it off.
+steve: Stella, I'm so sorry I ever doubted you.
+[8 sting]
+narrator: But Nurse Lemon wasn't laughing. Because she switched them on purpose.
+nurse: Step one, complete.

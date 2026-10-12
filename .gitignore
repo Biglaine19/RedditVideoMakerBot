@@ -244,3 +244,5 @@ video_creation/data/envvars.txt
 
 config.toml
 tiktok/videos/
+tiktok/models/
+tiktok/fruit/*/scene*.png
