@@ -48,7 +48,7 @@ def main(ep: Path, only: list):
         generator = torch.Generator().manual_seed(int(number) * 101)
         if ref.exists():
             init = Image.open(ref).convert("RGB").resize(SIZE, Image.LANCZOS)
-            image = img2img(full, negative_prompt=NEGATIVE, image=init, strength=0.6, num_inference_steps=8,
+            image = img2img(full, negative_prompt=NEGATIVE, image=init, strength=0.62, num_inference_steps=8,
                             guidance_scale=0, generator=generator).images[0]
         else:
             image = txt2img(full, negative_prompt=NEGATIVE, width=SIZE[0], height=SIZE[1], num_inference_steps=4,
