@@ -179,11 +179,11 @@ def main(ep: Path):
         subs = work / "subs.ass"
         captions(words, subs, total)
         extra = [
-            "Style: Hook,Inter Black,74,&H0033E6FF,&H0033E6FF,&H00000000,&HC8000000,0,0,0,0,100,100,0,0,3,16,0,8,60,60,250,1",
+            "Style: Hook,Inter Black,70,&H0033E6FF,&H0033E6FF,&H00000000,&HC8000000,0,0,0,0,100,100,0,0,3,16,0,8,60,60,250,1",
             "Style: End,Inter Black,150,&H00FFFFFF,&H00FFFFFF,&H00000000,&H96000000,0,0,0,0,100,100,0,0,1,12,6,5,40,40,0,1",
         ]
         text = subs.read_text(encoding="utf-8").replace("\n\n[Events]", "\n" + "\n".join(extra) + "\n\n[Events]")
-        text += f"Dialogue: 2,{ass_time(0)},{ass_time(3.2)},Hook,,0,0,0,,{{\\fad(150,200)}}{hook}\n"
+        text += f"Dialogue: 2,{ass_time(0)},{ass_time(3.2)},Hook,,0,0,0,,{{\\q0\\fad(150,200)}}{hook}\n"
         text += f"Dialogue: 2,{ass_time(total - 1.5)},{ass_time(total)},End,,0,0,0,,{{\\pos(540,820)\\fscx60\\fscy60\\t(0,200,\\fscx100\\fscy100)}}PART 2?\n"
         subs.write_text(text, encoding="utf-8")
         out = Path(__file__).parent.parent / "videos" / f"fruit-{ep.name}.mp4"
