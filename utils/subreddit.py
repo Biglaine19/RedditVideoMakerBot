@@ -1,4 +1,5 @@
 import json
+import time
 from os.path import exists
 
 from utils import settings
@@ -21,7 +22,7 @@ def get_subreddit_undone(submissions: list, subreddit, times_checked=0):
             json.dump([], f)
     with open("./video_creation/data/videos.json", "r", encoding="utf-8") as done_vids_raw:
         done_videos = json.load(done_vids_raw)
-    for submission in submissions:
+    for submission in sorted(submissions, key=viral_score, reverse=True):
         if already_done(done_videos, submission):
             continue
         if submission.over_18:
@@ -77,3 +78,17 @@ def already_done(done_videos: list, submission) -> bool:
         if video["id"] == str(submission):
             return True
     return False
+
+
+def viral_score(submission) -> float:
+    """Ranks posts by how fast they are gaining engagement, which tracks TikTok watch-through better than raw upvotes.
+
+    Args:
+        submission (Any): The submission
+
+    Returns:
+        float: Higher means more likely to perform well as a short video
+    """
+    age_hours = max((time.time() - submission.created_utc) / 3600, 1)
+    engagement = submission.score + 2 * submission.num_comments
+    return engagement / age_hours**0.8 * submission.upvote_ratio
