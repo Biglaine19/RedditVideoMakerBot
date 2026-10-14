@@ -12,13 +12,14 @@ and shown as such.
 """
 import json
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
 from ..config import DATA_DIR
-from ..economics import contribution, suggested_price
+from ..economics import ETSY, contribution, suggested_price
 from . import printful_catalog as pf
+from . import printify_catalog as pfy
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS candidates (
@@ -46,6 +47,13 @@ CREATE TABLE IF NOT EXISTS candidates (
     updated_at TEXT NOT NULL
 );
 """
+# Columns added after the first release; connect() adds them to older DBs.
+EXTRA_COLUMNS = {
+    "channel": "TEXT",
+    "cost_source": "TEXT",
+    "handling_days_max": "INTEGER",
+    "contribution_if_offsite_ad": "REAL",
+}
 
 
 @dataclass(frozen=True)
@@ -56,14 +64,22 @@ class Spec:
     quality_risk: int  # 1-5 judgement: 5 = high risk of complaints
     ip_risk: int  # 1-5: 1 = original designs only, low risk
     notes: str = ""
+    printful_benchmark_id: int | None = None  # same blank at Printful, for cost benchmarking
 
 
 def connect(path: Path | None = None) -> sqlite3.Connection:
     path = path or Path(DATA_DIR) / "dropship.db"
     path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(path)
+    return init(sqlite3.connect(path))
+
+
+def init(conn: sqlite3.Connection) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
+    have = {r[1] for r in conn.execute("PRAGMA table_info(candidates)")}
+    for col, typ in EXTRA_COLUMNS.items():
+        if col not in have:
+            conn.execute(f"ALTER TABLE candidates ADD COLUMN {col} {typ}")
     return conn
 
 
@@ -115,7 +131,58 @@ def evaluate(spec: Spec, niche: str, fetch=pf.get_product) -> dict:
         "status": "candidate" if stock_ok else "paused_out_of_stock",
         "notes": spec.notes,
         "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "channel": "shopify",
+        "cost_source": "printful catalog API (live)",
+        "handling_days_max": pf.PUBLISHED_FULFILLMENT_DAYS[1],
+        "contribution_if_offsite_ad": None,
     }
+
+
+def evaluate_printify(spec: Spec, niche: str, manual_costs: dict, shipping=pfy.us_shipping,
+                      variant_list=pfy.variants, resolve=pfy.resolve_cost, bp=pfy.blueprint) -> dict:
+    """Printify blueprint (Printify Choice provider) sold on Etsy, free shipping to buyer."""
+    ship = shipping(spec.product_id)
+    in_stock = len(variant_list(spec.product_id))
+    cost, cost_source = resolve(spec.product_id, spec.printful_benchmark_id, manual_costs)
+    info = bp(spec.product_id)
+    row = {
+        "key": f"printify:{spec.product_id}:{niche}",
+        "niche": niche,
+        "supplier": "printify",
+        "supplier_product_id": spec.product_id,
+        "title": f"{info['title']} | {info['brand']} {info['model']}".strip(),
+        "shipping_group": spec.shipping_group,
+        "cost_median": cost,
+        "variants_in_stock": in_stock,
+        "shipping_cost": ship["first_item"],
+        "shipping_source": ship["source"],
+        "demand_evidence": "unverified",
+        "demand_score": 0.0,
+        "video_fit": spec.video_fit,
+        "quality_risk": spec.quality_risk,
+        "ip_risk": spec.ip_risk,
+        "notes": spec.notes,
+        "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "channel": "etsy",
+        "cost_source": cost_source,
+        "handling_days_max": ship["handling_days_max"],
+    }
+    if cost is None:
+        return dict(row, price=None, contribution_before_ads=None, margin_before_ads_pct=None,
+                    contribution_if_offsite_ad=None, score=0.0, status="needs_cost")
+    price = suggested_price(cost, ship["first_item"], fees=ETSY)
+    econ = contribution(price, cost, ship["first_item"], fees=ETSY)
+    offsite = contribution(price, cost, ship["first_item"],
+                           fees=replace(ETSY, offsite_ads_share=1.0))
+    margin = round(100 * econ.breakeven_cpa / price, 1)
+    stock_ok = in_stock > 0
+    return dict(
+        row, price=price, contribution_before_ads=econ.breakeven_cpa, margin_before_ads_pct=margin,
+        contribution_if_offsite_ad=offsite.breakeven_cpa,
+        score=score(margin, econ.breakeven_cpa, stock_ok, spec.video_fit, spec.quality_risk, spec.ip_risk, 0.0),
+        status=("candidate" if stock_ok else "paused_out_of_stock")
+        if cost_source.startswith(("owner", "printify")) else "cost_unverified",
+    )
 
 
 def upsert(conn: sqlite3.Connection, row: dict) -> None:
@@ -125,6 +192,7 @@ def upsert(conn: sqlite3.Connection, row: dict) -> None:
     ).fetchone()
     if row["demand_evidence"] == "unverified" and existing and existing["demand_evidence"] != "unverified":
         row = dict(row, demand_evidence=existing["demand_evidence"], demand_score=existing["demand_score"])
+    if row["contribution_before_ads"] is not None and row["demand_evidence"] != "unverified":
         row["score"] = score(row["margin_before_ads_pct"], row["contribution_before_ads"],
                              row["variants_in_stock"] > 0, row["video_fit"], row["quality_risk"],
                              row["ip_risk"], row["demand_score"])
@@ -142,6 +210,8 @@ def record_demand(conn: sqlite3.Connection, key: str, evidence: dict, demand_sco
         if field not in evidence:
             raise ValueError(f"evidence needs '{field}'")
     row = dict(conn.execute("SELECT * FROM candidates WHERE key=?", (key,)).fetchone())
+    if row["contribution_before_ads"] is None:
+        raise ValueError(f"{key} has no verified cost yet")
     row["demand_evidence"] = json.dumps(evidence)
     row["demand_score"] = demand_score
     row["score"] = score(row["margin_before_ads_pct"], row["contribution_before_ads"],

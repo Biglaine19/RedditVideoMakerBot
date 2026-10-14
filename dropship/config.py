@@ -43,6 +43,11 @@ class Settings:
     printful_token: str | None = field(default=None, repr=False)
     shopify_store: str | None = None
     shopify_token: str | None = field(default=None, repr=False)
+    printify_token: str | None = field(default=None, repr=False)
+    printify_shop_id: str | None = None
+    etsy_api_key: str | None = field(default=None, repr=False)  # "<keystring>:<shared secret>"
+    etsy_oauth_token: str | None = field(default=None, repr=False)
+    etsy_shop_id: str | None = None
     limits: SpendingLimits = SpendingLimits()
 
     @classmethod
@@ -52,5 +57,10 @@ class Settings:
             printful_token=os.environ.get("PRINTFUL_TOKEN") or None,
             shopify_store=os.environ.get("SHOPIFY_STORE") or None,
             shopify_token=os.environ.get("SHOPIFY_ADMIN_TOKEN") or None,
+            printify_token=os.environ.get("PRINTIFY_TOKEN") or None,
+            printify_shop_id=os.environ.get("PRINTIFY_SHOP_ID") or None,
+            etsy_api_key=os.environ.get("ETSY_API_KEY") or None,
+            etsy_oauth_token=os.environ.get("ETSY_OAUTH_TOKEN") or None,
+            etsy_shop_id=os.environ.get("ETSY_SHOP_ID") or None,
             limits=SpendingLimits.from_env(),
         )

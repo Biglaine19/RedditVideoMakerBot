@@ -1,6 +1,6 @@
 # Print-on-demand business: audit and implementation plan
 
-Status as of 2026-10-14. All figures marked *estimate* are model outputs, not results.
+Status as of 2026-10-14. Channel: **Etsy**, supplier: **Printify**. All figures marked *estimate* are model outputs, not results.
 
 ## 1. Environment audit (Milestone 1)
 
@@ -9,97 +9,108 @@ Status as of 2026-10-14. All figures marked *estimate* are model outputs, not re
 | Runtime | Linux cloud container, Python 3.13, Node 22. Ephemeral: work persists only via git push. |
 | This repo | `RedditVideoMakerBot` (Reddit-to-video tool). Left untouched; new code lives in `dropship/` on branch `claude/dropshipping-system`. |
 | Connected (Claude) | Gmail, Google Drive, Google Sheets, Canva, AnythingMCP, GitHub, Robinhood, TipRanks (the last two are not relevant). |
-| E-commerce store | **None connected.** No Shopify/Etsy/WooCommerce credentials. |
-| Supplier | **None connected.** Printful public catalog (live product costs, stock) works without a token; shipping-rate and order APIs need a token. |
+| E-commerce store | **None connected.** Target channel: Etsy. |
+| Supplier | **None connected.** Target: Printify. Its public catalog gives live shipping, handling time and variants; production costs and the provider list need a token. (Printful's public catalog gives live costs; kept as benchmark/fallback.) |
 | Ads / social / analytics | **None connected.** |
 | Browser automation | Headless Chromium in the container only. It has no access to your logged-in accounts, and it is not used to get around logins or CAPTCHAs. |
-| AnythingMCP | Has ready connectors for Shopify, Printful, Printify, Gelato. **Workspace trial ends 2026-10-15**; after that it needs a paid plan. |
+| AnythingMCP | Has ready connectors for Etsy, Printify, Shopify, Printful. **Workspace trial ends 2026-10-15**; after that it needs a paid plan. |
 | Secrets | Read from environment variables only (`config.py`) and redacted from logs (`util.redact`). Nothing secret is committed. |
 
-## 2. Business model recommendation
+## 2. Business model: Etsy + Printify (owner's choice, 2026-10-14)
 
-**Print-on-demand (POD) via Printful + Shopify**, rather than generic AliExpress-style dropshipping:
-- Original designs: no counterfeit/IP risk, defensible brand.
-- Supplier with documented API, published fulfillment (2-5 business days) and US transit (3-4 business days) times, tracking on every order.
-- No inventory; nothing is produced until a customer pays.
+**Print-on-demand with original designs, sold on Etsy, fulfilled by Printify.** Shopify + Printful remains supported in code (`research-printful`) as a fallback.
 
-**Provisional niche: houseplant lovers ("plant parents").** Picked for: evergreen interest, giftability, very visual for short video, and a natural fit for original illustration. **Demand is NOT yet verified**. Every candidate shows `demand=unverified` and scores 0 on demand until real evidence is recorded (see §5). Alternatives worth comparing: home coffee/espresso, trail running, birding, bookish/reading.
+Why it fits: Etsy brings marketplace search traffic (no store to drive traffic to from zero), and Printify has a native Etsy integration that imports orders and pushes tracking back automatically.
 
-## 3. Unit economics (live Printful costs, published shipping)
+**Etsy rules that apply (from vendor/third-party guides; check Etsy's Creativity Standards in the Help Center):**
+- POD is allowed only for **your own designs**. Reselling generic items is prohibited.
+- Printify must be added as a **production partner** in shop settings, and each listing's "Who made it?" must say another company or person.
+- Keep design source files and creation dates; they help if a listing is flagged for originality.
 
-Run `python -m dropship.cli candidates`. Snapshot in `data/candidates.csv`.
+**Provisional niche: houseplant lovers.** Demand still **unverified**. Etsy search volume for candidate phrases is the first evidence to collect.
 
-At the 45%-margin *suggested* prices the numbers look healthy, but those prices are above typical POD market prices. At typical prices (my assumption, not measured):
+## 3. Unit economics
 
-| Product | Price | Contribution before ads (*estimate*) |
+Run `python -m dropship.cli candidates`. Snapshot: `data/candidates.csv`.
+
+| Input | Etsy + Printify | Source |
 |---|---|---|
-| Bella+Canvas 3001 tee | $27.99 | $9.16 (33%) |
-| Comfort Colors 1717 tee | $32.99 | $10.16 (31%) |
-| 11oz mug | $22.99 | $6.48 (28%) |
-| Gildan 18500 hoodie | $49.99 | $15.25 (31%) |
-| Poster | $29.99 | $11.12 (37%) |
+| Shipping (US, first item) | tee $3.99, sweatshirt/hoodie $7.39, mug $5.79, stickers $4.29 | **Live** Printify catalog API, provider "Printify Choice" |
+| Handling time | up to 10 days | Live Printify catalog API |
+| Production cost | **Not yet known.** Uses the Printful price for the same blank as a labelled BENCHMARK (`status=cost_unverified`) | Needs `PRINTIFY_TOKEN` |
+| Etsy fees | 6.5% transaction (on price + shipping), 3% + $0.25 payment, $0.20 listing renewal per sale | Third-party 2026 guides; etsy.com/legal/fees blocked automated fetch |
+| Offsite Ads | 15% of an attributed order (opt-out allowed under $10k/yr sales; 12% and mandatory above) | Same |
 
-Assumptions: free shipping to customer, Shopify Payments 2.9% + $0.30, 5% refund rate.
+At typical Etsy prices (my assumption) with benchmark costs, *estimate*:
 
-**Implication:** the break-even ad cost per order is only about $6-15. Paid ads are likely unprofitable until creative is proven. **Strategy: organic short-form video first, bundles to lift order value, paid ads only as small, capped tests after organic winners exist.**
+| Product | Price | Contribution before ads |
+|---|---|---|
+| Bella+Canvas 3001 tee | $27.99 | $8.18 (29%) |
+| Comfort Colors 1717 tee | $32.99 | $8.84 (27%) |
+| 11oz mug | $22.99 | $5.76 (25%) |
+| Gildan 18500 hoodie | $49.99 | $13.27 (27%) |
+
+An Offsite Ads sale takes roughly another $4-7 per order. **Recommendation:** opt out of Offsite Ads while sales are under $10k/yr, unless tests show it brings profitable incremental orders. Real Printify costs (often lower than Printful) will replace the benchmark once connected.
 
 ## 4. Estimated costs (nothing purchased)
 
-| Item | Cost | Needed when |
+| Item | Cost | When |
 |---|---|---|
-| Shopify Basic | $1/mo for 3 months after a 3-day trial, then $39/mo (or $29/mo yearly) | Store build |
-| Printful | Free account; pay per order at production cost | First order |
-| Sample units (strongly recommended for photos/video) | About $15-40 each incl. shipping | Before launch |
-| Custom domain | About $10-20/yr | Launch |
-| AnythingMCP (optional bridge for Claude to Shopify/Printful) | Paid plan after 2026-10-15 trial | Optional: direct API tokens work without it |
-| Ads | $0 until you approve a budget | Milestone 9+ |
+| Etsy shop | One-time setup fee reported at $15-29 (varies by region); $0.20 per listing, renewed every 4 months or on each sale | Shop creation |
+| Printify | Free plan; pay per order. Printify Premium (paid, optional) lowers product costs; evaluate after sales start | First order |
+| Samples | About $15-40 each | Before launch (photos/video) |
+| AnythingMCP | Paid plan after 2026-10-15 trial (optional) | Optional: direct tokens work without it |
+| Ads (Etsy Ads, Offsite Ads) | $0 until you approve | Milestone 9+ |
 
 ## 5. What is built (`dropship/`)
 
 | Module | Function | Tested |
 |---|---|---|
-| `research/` | Live Printful catalog client (cached), candidate DB (SQLite), scoring, demand-evidence recording (requires source/date/metric) | yes |
-| `economics.py` | Contribution / break-even CPA / price suggestion | yes |
-| `fulfillment/` | Order state machine, idempotent ingest, one draft per order (external_id), compare-and-set transitions, spending gates, cost-spike and stock checks, tracking sync, Printful adapter (drafts with `confirm=false`), offline simulator | yes (simulated end-to-end) |
-| `support/` | Grounded replies (orders DB + policy only), email-matched order lookup, escalation for disputes/legal/safety/complaints, all refunds routed to a human | yes |
-| `reporting/` | Daily/weekly summary; unconnected sources show `UNAVAILABLE`, never 0 | yes |
-| `marketing/` | Hooks/scripts/captions by format and platform, banned-claim filter, 14-day calendar (`data/content_calendar.json`), format ranking from real analytics only | yes |
-| `util.py` | JSON logs with secret redaction, HTTP retries with exponential backoff (429/5xx only) | yes |
+| `research/printify_catalog.py` | Live Printify shipping/handling/variants; cost from your Printify shop products (token), owner-entered `data/printify_costs.json` (source + date required), or labelled Printful benchmark | yes |
+| `research/candidates.py` | Candidate DB, ranking, Etsy fee economics incl. "if Offsite Ads" column, demand evidence | yes |
+| `economics.py` | Shopify and Etsy fee models | yes |
+| `channels/etsy.py` | Etsy Open API v3: unshipped paid receipts (paginated), receipt to order mapping (unmapped SKUs go to review), idempotent tracking upload | yes (mocked API) |
+| `fulfillment/printify_supplier.py` | Quote (variant cost + shipping API), **adopts the order Printify already imported from Etsy** instead of creating a duplicate, send-to-production, status/tracking mapping | yes (mocked API) |
+| `fulfillment/orders.py` | State machine, idempotency, spending gates, cost-spike/stock/unmapped checks. **Detects orders the supplier sent to production without approval, alerts, and counts the spend** | yes |
+| `support/`, `reporting/`, `marketing/` | As before; dashboard uses the Etsy fee model; support needs the real processing/transit windows | yes |
 
-Run tests: `python -m unittest dropship.tests.test_system` (29 tests, stdlib only, no installs).
+Tests: `python -m unittest dropship.tests.test_system` (44 tests, stdlib only). The Etsy and Printify API adapters are tested against mocks only; they have not been run against the real APIs yet.
 
-**Spending safety:** live supplier orders need `DROPSHIP_LIVE_ORDERS=1` **and** non-zero limits (`DROPSHIP_MAX_SUPPLIER_ORDER_USD`, `DROPSHIP_MAX_DAILY_SUPPLIER_SPEND_USD`). Defaults are zero, so every order stays an unpaid Printful draft.
+**Spending safety:** live orders need `DROPSHIP_LIVE_ORDERS=1` and non-zero limits. **In Printify, set the Etsy store's order approval to Manual.** Printify's docs say new stores have automatic approval for their first 24 hours, and with automatic approval imported orders go to production (and are charged) on their own, bypassing these limits.
 
 ## 6. Milestones
 
 | # | Milestone | Status | Blocked on |
 |---|---|---|---|
 | 1 | Environment audit | Done | none |
-| 2 | Niche and product research | Engine done; provisional niche | Your niche approval + demand evidence |
-| 3 | Supplier evaluation and unit economics | Printful costs live; shipping from published rates | `PRINTFUL_TOKEN` for API-verified shipping |
-| 4 | Store design and listings | Not started | Shopify store + Admin API access |
-| 5 | Fulfillment, support, analytics | Built and simulated | Shopify + Printful credentials to run against real data |
-| 6 | Marketing workflow | Draft calendar generated | Designs, sample footage, social accounts |
-| 7 | End-to-end test | Simulated only | Shopify test-mode checkout (Bogus Gateway) |
-| 8 | Launch review | Not started | All of the above + your approval |
-| 9-10 | Live operation and optimisation | Not started | Spending limits approved |
+| 2 | Niche and product research | Engine done; provisional niche | Niche approval + demand evidence |
+| 3 | Supplier evaluation / unit economics | Printify shipping live; costs benchmarked | `PRINTIFY_TOKEN` (real costs, provider comparison) |
+| 4 | Listings | Not started | Etsy shop + designs |
+| 5 | Fulfillment, support, analytics | Built, tested on mocks | Etsy + Printify credentials |
+| 6 | Marketing | Draft calendar | Designs, samples, social accounts |
+| 7 | End-to-end test | Simulated only | One real sample order (your approval) |
+| 8-10 | Launch, live ops, optimisation | Not started | Approvals + limits |
+
+Note: Etsy has no sandbox. The safe end-to-end test is a real order you pay for yourself (as a sample), or a Printify draft that is never sent to production.
 
 ## 7. Decisions and actions needed from you
 
-1. **Approve or change the niche** (houseplant lovers / coffee / running / birding / other).
-2. **Create a Shopify account** (trial needs no card) and either:
-   - create a custom app with Admin API scopes `read/write_products, read_orders, write_fulfillments, read_inventory`, and set the token as `SHOPIFY_ADMIN_TOKEN` in the environment's secrets, **or**
-   - connect Shopify through AnythingMCP (trial ends tomorrow, so this requires a paid plan).
-3. **Create a Printful account**, connect it to Shopify via Printful's official app, and generate a private API token (`PRINTFUL_TOKEN`). Add it as an environment secret; never paste it in chat.
-4. **Set spending limits** when you are ready: per-order and daily supplier caps, sample-order budget, ad budget (default $0), refund authority (default: you approve every refund), maximum acceptable total loss.
-5. **Designs:** supply original artwork, or approve AI/Canva-generated designs. Note that AI-generated art may have limited copyright protection. Avoid trademarked plant brands and copyrighted characters.
-6. **Business basics:** support email/domain, business address for policies, and your sales tax registration approach (Shopify Tax can calculate; obligations depend on your state, so check with an accountant).
+1. **Approve or change the niche.**
+2. **Open an Etsy shop** (identity, bank and billing verification are yours to complete; I cannot do these).
+3. **Create a Printify account**, connect it to Etsy with Printify's official integration, and **set order approval to Manual**.
+4. **Printify API token:** Printify > My account > Connections > generate a personal access token. Add it as environment secret `PRINTIFY_TOKEN`, and the shop id as `PRINTIFY_SHOP_ID`. Don't paste tokens in chat.
+5. **Etsy API (optional at first):** register an app at https://www.etsy.com/developers/register. Add the env secrets `ETSY_API_KEY` (`keystring:shared_secret`), `ETSY_OAUTH_TOKEN` and `ETSY_SHOP_ID`. Alternatively, connect Etsy through AnythingMCP (paid after its trial ends tomorrow). Printify's integration covers orders and tracking without this; the Etsy API is for reporting and support lookups.
+6. **Spending limits:** per order, per day, sample budget, ad budget ($0 default), refund authority (you approve all by default), maximum total loss, and Offsite Ads opt-out (recommended).
+7. **Designs:** original artwork, or approval for Canva/AI-assisted designs. Etsy's originality rules make your own design work important.
+8. **Business basics:** support email, return policy confirmation (made-to-order: replace or refund damaged/misprinted items; no change-of-mind returns), tax setup (Etsy collects US marketplace sales tax in most states; check income tax with an accountant).
 
 ## 8. Risks
 
 - Thin margins with paid ads (see §3).
 - Demand unverified; a niche may not convert.
 - POD quality complaints (print fading, sizing): mitigated by ordering samples and a size chart.
-- Mug/framed-poster breakage: covered by the reprint policy; tracked via `needs_review`.
+- Mug breakage: covered by the reprint policy; tracked via `needs_review`.
+- Etsy account risk: originality flags or slow dispatch can restrict a new shop. Mitigate with original designs, production-partner disclosure, and listing processing times that match Printify's real handling time (up to 10 days).
+- Printify auto-approval bypassing spending limits (see §5).
 - Platform policy: content automation must use official APIs/schedulers; no fake engagement or reviews.
 - Candle: safety-warning labelling required; no therapeutic or scent-benefit claims.

@@ -1,6 +1,7 @@
 """Command line entry points.
 
-  python -m dropship.cli research    # refresh candidate DB from live Printful catalog
+  python -m dropship.cli research    # refresh candidate DB (Printify catalog, Etsy fees)
+  python -m dropship.cli research-printful  # alternative: Printful catalog, Shopify fees
   python -m dropship.cli candidates  # print ranked candidates
   python -m dropship.cli calendar    # 14-day content plan (JSON) for review
   python -m dropship.cli report      # daily summary from connected sources
@@ -12,16 +13,30 @@ from datetime import date
 from pathlib import Path
 
 from .config import DATA_DIR, Settings
+from .economics import ETSY
 from .fulfillment.orders import OrderStore
 from .marketing import content
 from .reporting import dashboard
 from .research import candidates as cand
+from .research import printify_catalog as pfy
 from .research.candidates import Spec
 
 # PROVISIONAL niche pending owner approval. Video-fit / quality / IP scores are
 # analyst judgement (1-5), not measured data.
 NICHE = "houseplant-lovers"
 AUDIENCE = "plant parent"
+# Printify blueprint ids (Printify Choice provider), with the matching Printful
+# product as a cost benchmark until real Printify costs are available.
+PRINTIFY_SPECS = [
+    Spec(12, "T-SHIRT", 4, 2, 1, "Bella+Canvas 3001", printful_benchmark_id=71),
+    Spec(706, "T-SHIRT", 4, 2, 1, "Comfort Colors 1717; earthy colours suit niche", printful_benchmark_id=586),
+    Spec(6, "T-SHIRT", 4, 2, 1, "Gildan 5000; budget blank", printful_benchmark_id=None),
+    Spec(49, "HOODIE", 3, 2, 1, "Gildan 18000 crewneck; seasonal", printful_benchmark_id=145),
+    Spec(77, "HOODIE", 3, 2, 1, "Gildan 18500 hoodie; seasonal", printful_benchmark_id=146),
+    Spec(478, "MUG", 4, 2, 1, "Ceramic mug 11/15oz; breakage risk", printful_benchmark_id=19),
+    Spec(400, "STICKER", 3, 1, 1, "Kiss-cut stickers; low-ticket add-on", printful_benchmark_id=358),
+]
+
 SPECS = [
     Spec(71, "T-SHIRT", 4, 2, 1, "Bella+Canvas 3001; staple tee, wide size range"),
     Spec(586, "T-SHIRT", 4, 2, 1, "Comfort Colors 1717; heavier garment-dyed tee, earthy colours suit niche"),
@@ -37,12 +52,16 @@ SPECS = [
 ]
 
 
-def research(out=sys.stdout) -> list[dict]:
+def research(out=sys.stdout, supplier: str = "printify") -> list[dict]:
     conn = cand.connect()
     errors = []
-    for spec in SPECS:
+    manual = pfy.load_manual_costs()
+    specs = PRINTIFY_SPECS if supplier == "printify" else SPECS
+    for spec in specs:
         try:
-            cand.upsert(conn, cand.evaluate(spec, NICHE))
+            row = (cand.evaluate_printify(spec, NICHE, manual) if supplier == "printify"
+                   else cand.evaluate(spec, NICHE))
+            cand.upsert(conn, row)
         except Exception as exc:  # noqa: BLE001 - one bad product must not stop the run
             errors.append(f"product {spec.product_id}: {exc}")
     rows = cand.ranked(conn, NICHE)
@@ -59,12 +78,19 @@ def research(out=sys.stdout) -> list[dict]:
 
 def show_candidates(out=sys.stdout) -> None:
     rows = cand.ranked(cand.connect(), NICHE)
-    print(f"{'score':>5}  {'cost':>6} {'ship':>5} {'price':>6} {'contrib*':>8} {'margin*':>7}  demand      title", file=out)
+    print(f"{'score':>5} {'chan':7} {'cost':>6} {'ship':>5} {'price':>6} {'contrib*':>8} {'w/offsite':>9} "
+          f"{'status':15} title", file=out)
+
+    def f(v, fmt):
+        return format(v, fmt) if v is not None else "-".rjust(int(fmt.split(".")[0]))
+
     for r in rows:
-        print(f"{r['score']:5.1f}  {r['cost_median']:6.2f} {r['shipping_cost']:5.2f} {r['price']:6.2f} "
-              f"{r['contribution_before_ads']:8.2f} {r['margin_before_ads_pct']:6.1f}%  "
-              f"{r['demand_evidence'][:10]:10}  {r['title']}", file=out)
-    print("* estimates before ad spend, free shipping to customer; contribution = max affordable CPA", file=out)
+        print(f"{r['score']:5.1f} {(r['channel'] or ''):7} {f(r['cost_median'], '6.2f')} {r['shipping_cost']:5.2f} "
+              f"{f(r['price'], '6.2f')} {f(r['contribution_before_ads'], '8.2f')} "
+              f"{f(r['contribution_if_offsite_ad'], '9.2f')} {r['status']:15} {r['title']}", file=out)
+    print("* estimates before ad spend, free shipping to buyer, demand unverified unless recorded.\n"
+          "  w/offsite = contribution if the sale is attributed to Etsy Offsite Ads (15%).\n"
+          "  status cost_unverified = cost is a Printful BENCHMARK, not a Printify price.", file=out)
 
 
 def make_calendar(out=sys.stdout) -> None:
@@ -79,15 +105,16 @@ def report(out=sys.stdout) -> None:
     import sqlite3
     store = OrderStore(sqlite3.connect(Path(DATA_DIR) / "dropship.db"))
     settings = Settings.from_env()
-    sources = dashboard.Sources()  # Shopify / ad sources plug in here once connected
-    if not settings.shopify_token:
-        print("note: Shopify not connected; sales metrics UNAVAILABLE", file=out)
+    sources = dashboard.Sources(fees=ETSY)  # Etsy receipts / ad sources plug in here once connected
+    if not settings.etsy_oauth_token:
+        print("note: Etsy not connected; sales metrics UNAVAILABLE", file=out)
     print(dashboard.render_text(dashboard.build(sources, store)), file=out)
 
 
 def main(argv=None) -> None:
     cmd = (argv or sys.argv[1:] or ["candidates"])[0]
-    {"research": research, "candidates": show_candidates, "calendar": make_calendar, "report": report}[cmd]()
+    {"research": research, "research-printful": lambda: research(supplier="printful"),
+     "candidates": show_candidates, "calendar": make_calendar, "report": report}[cmd]()
 
 
 if __name__ == "__main__":

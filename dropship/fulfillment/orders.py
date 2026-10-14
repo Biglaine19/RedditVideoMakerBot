@@ -157,6 +157,11 @@ class FulfillmentPipeline:
 
     def validate(self, oid: str) -> None:
         order = self.store.get(oid)
+        unmapped = order["payload"].get("unmapped_skus")
+        if unmapped:
+            self.store.transition(oid, "needs_review", f"unmapped SKUs: {unmapped}")
+            self.alert(f"Order {oid} needs review: no supplier mapping for {unmapped}")
+            return
         quote = self.supplier.quote(order["payload"])
         if not quote.available:
             self.store.transition(oid, "needs_review", f"unavailable: {quote.unavailable_skus}")
@@ -186,6 +191,18 @@ class FulfillmentPipeline:
         order = self.store.get(oid)
         limits = self.settings.limits
         cost = order["supplier_cost"] or 0.0
+        # The supplier may have started production on its own (e.g. Printify
+        # auto-approval of imported Etsy orders). Record the spend and alert.
+        external = self.supplier.get_status(order["supplier_order_id"]).get("state")
+        if external in ("failed", "cancelled", "canceled"):
+            self.store.transition(oid, "needs_review", f"supplier draft is {external}")
+            self.alert(f"Order {oid}: supplier draft is '{external}'")
+            return False
+        if external in ("in_production", "inprocess", "shipped", "delivered", "fulfilled"):
+            self.store.transition(oid, "confirmed", f"confirmed OUTSIDE spending gates (supplier: {external})")
+            self.alert(f"Order {oid} was sent to production by the supplier without our approval; "
+                       "check that supplier order approval is set to manual")
+            return False
         reasons = []
         if not self.settings.live_orders_enabled:
             reasons.append("live orders disabled")
@@ -204,16 +221,17 @@ class FulfillmentPipeline:
         order = self.store.get(oid)
         status = self.supplier.get_status(order["supplier_order_id"])
         state = status.get("state")
-        if state == "shipped" and order["state"] in ("confirmed", "in_production"):
+        if state in ("shipped", "delivered") and order["state"] in ("confirmed", "in_production"):
             self.store.transition(
                 oid, "shipped", "tracking received",
                 tracking_number=status.get("tracking_number"),
                 tracking_url=status.get("tracking_url"),
                 carrier=status.get("carrier"),
             )
+            order = self.store.get(oid)
         elif state == "in_production" and order["state"] == "confirmed":
             self.store.transition(oid, "in_production", "supplier in production")
-        elif state == "delivered" and order["state"] == "shipped":
+        if state == "delivered" and order["state"] == "shipped":
             self.store.transition(oid, "delivered", "carrier delivered")
         elif state in ("failed", "canceled", "cancelled", "onhold"):
             if order["state"] not in ("failed", "cancelled", "needs_review"):

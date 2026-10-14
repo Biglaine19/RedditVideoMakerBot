@@ -8,9 +8,11 @@ from unittest import mock
 
 from dropship import util
 from dropship.config import Settings, SpendingLimits
-from dropship.economics import contribution, suggested_price
+from dropship.channels import etsy
+from dropship.economics import ETSY, contribution, suggested_price
 from dropship.fulfillment.orders import FulfillmentPipeline, InvalidTransition, OrderStore
 from dropship.fulfillment.printful_supplier import PrintfulSupplier, SimulatedSupplier
+from dropship.fulfillment.printify_supplier import PrintifySupplier
 from dropship.marketing import content
 from dropship.reporting import dashboard
 from dropship.research import candidates as cand
@@ -48,6 +50,14 @@ class EconomicsTest(unittest.TestCase):
         self.assertGreaterEqual(contribution(p, 12, 5).breakeven_cpa / p, 0.4)
         self.assertTrue(f"{p:.2f}".endswith(".99"))
 
+    def test_etsy_fees(self):
+        e = contribution(30.0, 12.0, 4.0, fees=ETSY)
+        self.assertAlmostEqual(e.payment_fees, round(30 * 0.03 + 0.25, 2))
+        self.assertAlmostEqual(e.channel_fees, round(30 * 0.065 + 0.20, 2))
+        from dataclasses import replace
+        offsite = contribution(30.0, 12.0, 4.0, fees=replace(ETSY, offsite_ads_share=1.0))
+        self.assertAlmostEqual(e.contribution - offsite.contribution, 4.5, places=2)
+
     def test_rejects_nonpositive_price(self):
         with self.assertRaises(ValueError):
             contribution(0, 1, 1)
@@ -59,9 +69,7 @@ class CandidatesTest(unittest.TestCase):
                 "variants": [{"price": "10.00", "in_stock": stock, "availability_regions": {"US": "x"}}]}
 
     def test_unverified_demand_scores_zero_and_evidence_persists(self):
-        conn = sqlite3.connect(":memory:")
-        conn.row_factory = sqlite3.Row
-        conn.executescript(cand.SCHEMA)
+        conn = cand.init(sqlite3.connect(":memory:"))
         spec = cand.Spec(1, "T-SHIRT", 4, 2, 1)
         row = cand.evaluate(spec, "n", fetch=self.fake_product)
         self.assertEqual(row["demand_evidence"], "unverified")
@@ -78,6 +86,152 @@ class CandidatesTest(unittest.TestCase):
         row = cand.evaluate(cand.Spec(1, "T-SHIRT", 4, 2, 1), "n", fetch=lambda p: self.fake_product(p, False))
         self.assertEqual(row["status"], "paused_out_of_stock")
         self.assertEqual(row["score"], 0.0)
+
+
+class PrintifyResearchTest(unittest.TestCase):
+    def kwargs(self, cost=(10.0, "owner-entered: invoice (2026-10-14)")):
+        return dict(shipping=lambda b: {"first_item": 4.0, "handling_days_max": 10, "source": "live"},
+                    variant_list=lambda b: [{"id": 1}], resolve=lambda b, pf_id, m: cost,
+                    bp=lambda b: {"title": "Tee", "brand": "B", "model": "M"})
+
+    def test_verified_cost(self):
+        row = cand.evaluate_printify(cand.Spec(12, "T-SHIRT", 4, 2, 1), "n", {}, **self.kwargs())
+        self.assertEqual((row["status"], row["channel"]), ("candidate", "etsy"))
+        self.assertLess(row["contribution_if_offsite_ad"], row["contribution_before_ads"])
+
+    def test_benchmark_cost_flagged(self):
+        row = cand.evaluate_printify(cand.Spec(12, "T-SHIRT", 4, 2, 1), "n", {},
+                                     **self.kwargs((10.0, "BENCHMARK: printful")))
+        self.assertEqual(row["status"], "cost_unverified")
+
+    def test_missing_cost_not_priced(self):
+        conn = cand.init(sqlite3.connect(":memory:"))
+        row = cand.evaluate_printify(cand.Spec(6, "T-SHIRT", 4, 2, 1), "n", {}, **self.kwargs((None, "unknown")))
+        self.assertEqual((row["status"], row["price"], row["score"]), ("needs_cost", None, 0.0))
+        cand.upsert(conn, row)
+        with self.assertRaises(ValueError):
+            cand.record_demand(conn, row["key"], {"source": "s", "date": "d", "metric": "m"}, 0.5)
+
+    def test_manual_costs_require_source(self):
+        import tempfile
+        from pathlib import Path
+        from dropship.research import printify_catalog as pfy
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "c.json"
+            path.write_text(json.dumps({"12": {"cost": 9.5}}))
+            with self.assertRaises(ValueError):
+                pfy.load_manual_costs(path)
+
+
+class FakePrintify:
+    """Records calls to a fake Printify API."""
+
+    def __init__(self, orders=None, status="on-hold", shipments=None):
+        self.calls = []
+        self.orders = orders or []
+        self.status = status
+        self.shipments = shipments or []
+
+    def __call__(self, url, method="GET", body=None, headers=None):
+        self.calls.append((method, url, body))
+        if "/products/" in url:
+            return {"variants": [{"id": 11, "cost": 1050, "is_enabled": True, "is_available": True},
+                                 {"id": 12, "cost": 1050, "is_enabled": False}]}
+        if url.endswith("orders/shipping.json"):
+            return {"standard": 399}
+        if "orders.json?page" in url:
+            return {"data": self.orders, "last_page": 1}
+        if url.endswith("/orders.json") and method == "POST":
+            return {"id": "new-1"}
+        if "send_to_production" in url:
+            return {}
+        return {"status": self.status, "shipments": self.shipments}
+
+
+PFY_ORDER = {"items": [{"supplier_product_id": "p1", "supplier_variant_id": 11, "quantity": 2}],
+             "address_to": {"country": "US"}}
+
+
+class PrintifySupplierTest(unittest.TestCase):
+    def test_quote_uses_variant_cost_plus_shipping(self):
+        q = PrintifySupplier("t", "s", http=FakePrintify()).quote(PFY_ORDER)
+        self.assertEqual((q.available, q.total_cost), (True, 24.99))
+
+    def test_disabled_variant_unavailable(self):
+        order = {**PFY_ORDER, "items": [{"supplier_product_id": "p1", "supplier_variant_id": 12, "quantity": 1}]}
+        q = PrintifySupplier("t", "s", http=FakePrintify()).quote(order)
+        self.assertEqual((q.available, q.unavailable_skus), (False, [12]))
+
+    def test_adopts_order_imported_from_etsy(self):
+        api = FakePrintify(orders=[{"id": "imp-9", "metadata": {"shop_order_id": 555}}])
+        sid = PrintifySupplier("t", "s", http=api).create_draft(PFY_ORDER, "555")
+        self.assertEqual(sid, "imp-9")
+        self.assertFalse(any(m == "POST" and u.endswith("/orders.json") for m, u, _ in api.calls))
+
+    def test_creates_when_absent(self):
+        api = FakePrintify()
+        self.assertEqual(PrintifySupplier("t", "s", http=api).create_draft(PFY_ORDER, "556"), "new-1")
+        body = next(b for m, u, b in api.calls if m == "POST" and u.endswith("/orders.json"))
+        self.assertEqual(body["external_id"], "556")
+        self.assertFalse(body["send_shipping_notification"])
+
+    def test_status_mapping(self):
+        sup = PrintifySupplier("t", "s", http=FakePrintify(status="fulfilled", shipments=[
+            {"carrier": "usps", "number": "94001", "url": "u", "delivered_at": None}]))
+        self.assertEqual(sup.get_status("1")["state"], "shipped")
+        sup = PrintifySupplier("t", "s", http=FakePrintify(status="fulfilled", shipments=[
+            {"carrier": "usps", "number": "94001", "url": "u", "delivered_at": "2026-10-20"}]))
+        self.assertEqual(sup.get_status("1")["state"], "delivered")
+        self.assertEqual(PrintifySupplier("t", "s", http=FakePrintify(status="on-hold")).get_status("1")["state"], "draft")
+
+    def test_auto_approved_order_alerts_and_counts_spend(self):
+        alerts = []
+        store = OrderStore(sqlite3.connect(":memory:"))
+        api = FakePrintify(status="in-production")
+        p = FulfillmentPipeline(store, PrintifySupplier("t", "s", http=api), Settings(), alert=alerts.append)
+        store.ingest("777", PFY_ORDER)
+        p.run()
+        self.assertEqual(store.get("777")["state"], "in_production")
+        self.assertIn("without our approval", alerts[0])
+        self.assertFalse(any("send_to_production" in u for _, u, _ in api.calls))
+
+
+class EtsyTest(unittest.TestCase):
+    RECEIPT = {"receipt_id": 4242, "name": "Ada Lovelace", "buyer_email": "ada@example.com",
+               "first_line": "1 Main St", "city": "LA", "state": "CA", "zip": "90001", "country_iso": "US",
+               "grandtotal": {"amount": 3499, "divisor": 100},
+               "transactions": [{"sku": "TEE-M", "quantity": 1, "listing_id": 1},
+                                {"sku": "", "quantity": 1, "listing_id": 2}]}
+
+    def test_to_order_flags_unmapped(self):
+        oid, payload = etsy.to_order(self.RECEIPT, {"TEE-M": {"supplier_product_id": "p", "supplier_variant_id": 1}},
+                                     {"TEE-M": 16.0})
+        self.assertEqual((oid, payload["total"], payload["expected_supplier_cost"]), ("4242", 34.99, 16.0))
+        self.assertEqual(payload["unmapped_skus"], ["listing:2"])
+        self.assertEqual(payload["address_to"]["last_name"], "Lovelace")
+        store, sup, p = pipeline()
+        store.ingest(oid, payload)
+        p.run()
+        self.assertEqual(store.get(oid)["state"], "needs_review")
+        self.assertEqual(sup.drafts, {})
+
+    def test_add_tracking_idempotent(self):
+        calls = []
+
+        def http(url, method="GET", body=None, headers=None):
+            calls.append((method, url, headers))
+            return {"shipments": [{"tracking_code": "T1"}]}
+
+        client = etsy.EtsyClient("key:secret", "tok", "shop", http=http)
+        self.assertFalse(client.add_tracking(1, "T1", "usps"))
+        self.assertTrue(client.add_tracking(1, "T2", "usps"))
+        self.assertEqual(calls[0][2]["x-api-key"], "key:secret")
+        self.assertEqual(sum(1 for m, _, _ in calls if m == "POST"), 1)
+
+    def test_receipts_paginate(self):
+        pages = [{"count": 3, "results": [1, 2]}, {"count": 3, "results": [3]}]
+        client = etsy.EtsyClient("k:s", "t", "shop", http=lambda *a, **k: pages.pop(0))
+        self.assertEqual(client.unshipped_paid_receipts(limit=2), [1, 2, 3])
 
 
 class FulfillmentTest(unittest.TestCase):
@@ -160,6 +314,14 @@ class FulfillmentTest(unittest.TestCase):
         self.assertEqual(store.get("1001")["state"], "delivered")
         self.assertEqual(sup.confirm_calls, 1)
 
+    def test_delivered_without_seeing_shipped(self):
+        store, sup, p = pipeline(APPROVED)
+        store.ingest("1001", ORDER)
+        p.run()
+        sup.status[store.get("1001")["supplier_order_id"]] = {"state": "delivered", "tracking_number": "T"}
+        p.run()
+        self.assertEqual(store.get("1001")["state"], "delivered")
+
     def test_draft_failure_alerts(self):
         alerts = []
         sup = SimulatedSupplier()
@@ -194,7 +356,7 @@ class SupportTest(unittest.TestCase):
     def setUp(self):
         self.store = OrderStore(sqlite3.connect(":memory:"))
         self.store.ingest("1001", ORDER)
-        self.bot = SupportAssistant(Policy("Leaf & Line", "help@example.com", product_facts={"material": "100% cotton"}), self.store)
+        self.bot = SupportAssistant(Policy("Leaf & Line", "help@example.com", (2, 10), (3, 5), product_facts={"material": "100% cotton"}), self.store)
 
     def test_escalations(self):
         for msg in ["I'm filing a chargeback", "my lawyer will hear about this", "the candle burned my hand",

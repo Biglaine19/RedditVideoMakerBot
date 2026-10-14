@@ -3,18 +3,19 @@
 Each metric carries a source label. When a data source is not connected the
 metric is reported as UNAVAILABLE rather than zero or a guess.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from ..economics import SHOPIFY, FeeModel
 
 UNAVAILABLE = "UNAVAILABLE"
 
 
 @dataclass
 class Sources:
-    store_orders: list | None = None  # from Shopify: [{id, total, refunded, created_at}]
-    sessions: int | None = None  # from Shopify analytics
+    store_orders: list | None = None  # from the store (Etsy receipts or Shopify orders)
+    sessions: int | None = None  # from store analytics
     ad_spend: float | None = None  # from ad platform APIs
-    payment_fee_pct: float = 0.029
-    payment_fee_fixed: float = 0.30
+    fees: FeeModel = field(default_factory=lambda: SHOPIFY)
     chargebacks: float | None = None
 
 
@@ -30,13 +31,15 @@ def build(sources: Sources, order_store=None, support_open: int | None = None,
     revenue = sum(o["total"] for o in orders) if orders is not None else None
     refunds = sum(o.get("refunded", 0) for o in orders) if orders is not None else None
     count = len(orders) if orders is not None else None
-    put("total_sales", revenue, "shopify")
-    put("orders", count, "shopify")
-    put("refunds", refunds, "shopify")
-    put("chargebacks", sources.chargebacks, "shopify_payments")
+    put("total_sales", revenue, "store")
+    put("orders", count, "store")
+    put("refunds", refunds, "store")
+    put("chargebacks", sources.chargebacks, "store payments")
     put("average_order_value", round(revenue / count, 2) if count else (0.0 if count == 0 else None), "derived")
-    fees = round(sum(o["total"] * sources.payment_fee_pct + sources.payment_fee_fixed for o in orders), 2) if orders is not None else None
-    put("payment_fees_est", fees, "estimated from fee model")
+    f = sources.fees
+    fees = round(sum(o["total"] * (f.payment_pct + f.transaction_pct) + f.payment_fixed + f.per_order_fixed
+                     for o in orders), 2) if orders is not None else None
+    put("payment_and_channel_fees_est", fees, "estimated from fee model (excl. Offsite Ads)")
     put("conversion_rate_pct", round(100 * count / sources.sessions, 2) if count is not None and sources.sessions else None, "derived")
     put("ad_spend", sources.ad_spend, "ad platforms")
 

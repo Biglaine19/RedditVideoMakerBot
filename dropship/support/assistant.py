@@ -30,8 +30,10 @@ ORDER_ID_RE = re.compile(r"#?\b(\d{4,})\b")
 class Policy:
     store_name: str
     support_email: str
-    fulfillment_days: tuple = (2, 5)
-    transit_days_us: tuple = (3, 4)
+    # Must match the supplier and the processing time shown on the listing
+    # (Printify Choice publishes handling of up to 10 days; Printful 2-5).
+    fulfillment_days: tuple
+    transit_days_us: tuple
     return_window_days: int = 30
     # Print-on-demand items are made to order: damaged/misprinted items are
     # replaced or refunded; change-of-mind returns are not accepted.
