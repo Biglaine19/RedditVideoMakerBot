@@ -122,6 +122,38 @@ class PrintifyResearchTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 pfy.load_manual_costs(path)
 
+    def test_compare_providers_sorted_and_skips_non_us(self):
+        from dropship.research import printify_catalog as pfy
+
+        def ship(b, pid, token=None):
+            if pid == 3:
+                raise LookupError("no US")
+            cost = {1: 4.49, 2: 3.99}[pid]
+            return {"first_item": cost, "additional_item": 2.09, "first_item_max": cost, "handling_days_max": 10}
+
+        rows = pfy.compare_providers(12, "t", provider_list=lambda b, t: [
+            {"id": 1, "title": "A"}, {"id": 2, "title": "B"}, {"id": 3, "title": "EU only"}],
+            countries=lambda t: {1: "US", 2: "US", 3: "DE"}, shipping=ship)
+        self.assertEqual([r["provider_id"] for r in rows], [2, 1])
+        self.assertEqual(rows[0]["country"], "US")
+
+    def test_costs_from_shop_median_of_enabled_variants(self):
+        from dropship.research import printify_catalog as pfy
+        res = {"data": [{"id": "p1", "blueprint_id": 12, "print_provider_id": 99, "variants": [
+            {"cost": 900, "is_enabled": True}, {"cost": 1100, "is_enabled": True},
+            {"cost": 5000, "is_enabled": False}]}, {"id": "p2", "blueprint_id": 6, "print_provider_id": 99,
+                                                    "variants": []}]}
+        costs = pfy.costs_from_shop("s", "t", http=lambda url, headers: res, today="2026-10-15")
+        self.assertEqual(costs, {"12": {"cost": 10.0, "source": "printify shop s product p1 (provider 99)",
+                                        "date": "2026-10-15"}})
+
+    def test_throttle_spaces_calls(self):
+        from dropship.research import printify_catalog as pfy
+        slept = []
+        with mock.patch.object(pfy, "_last_call", [100.0]):
+            pfy._throttle(sleep=slept.append, clock=lambda: 100.2)
+        self.assertAlmostEqual(slept[0], pfy.CATALOG_MIN_INTERVAL_S - 0.2)
+
 
 class FakePrintify:
     """Records calls to a fake Printify API."""

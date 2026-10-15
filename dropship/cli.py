@@ -2,6 +2,7 @@
 
   python -m dropship.cli research    # refresh candidate DB (Printify catalog, Etsy fees)
   python -m dropship.cli research-printful  # alternative: Printful catalog, Shopify fees
+  python -m dropship.cli providers   # compare Printify providers (needs PRINTIFY_TOKEN)
   python -m dropship.cli candidates  # print ranked candidates
   python -m dropship.cli calendar    # 14-day content plan (JSON) for review
   python -m dropship.cli report      # daily summary from connected sources
@@ -101,6 +102,37 @@ def make_calendar(out=sys.stdout) -> None:
     print(f"{len(plan)} draft posts -> {path}", file=out)
 
 
+def compare_providers(out=sys.stdout) -> dict:
+    """US shipping / handling per provider for each candidate blueprint, plus real costs
+    from existing shop products. Read-only Printify calls."""
+    settings = Settings.from_env()
+    if not settings.printify_token:
+        print("PRINTIFY_TOKEN not set", file=out)
+        return {}
+    token = settings.printify_token
+    result = {}
+    for spec in PRINTIFY_SPECS:
+        rows = pfy.compare_providers(spec.product_id, token)
+        result[str(spec.product_id)] = rows
+        print(f"blueprint {spec.product_id} ({spec.notes.split(';')[0]}): {len(rows)} providers ship to US", file=out)
+        for r in rows[:5]:
+            print(f"  {r['provider_id']:>4} {r['title'][:24]:24} {r['country'] or '?':3} "
+                  f"ship ${r['us_first_item']:.2f} (+${r['us_additional_item']:.2f})  "
+                  f"handling {r['handling_days_max']}d", file=out)
+    path = Path(DATA_DIR) / "printify_providers.json"
+    path.write_text(json.dumps({"date": date.today().isoformat(), "blueprints": result}, indent=2))
+    print(f"-> {path}", file=out)
+    if settings.printify_shop_id:
+        costs = pfy.costs_from_shop(settings.printify_shop_id, token)
+        print(f"{len(costs)} blueprints with real costs in shop {settings.printify_shop_id}", file=out)
+        if costs:
+            cost_path = Path(DATA_DIR) / "printify_costs.json"
+            merged = dict(pfy.load_manual_costs(cost_path), **costs)
+            cost_path.write_text(json.dumps(merged, indent=2))
+            print(f"-> {cost_path}", file=out)
+    return result
+
+
 def report(out=sys.stdout) -> None:
     import sqlite3
     store = OrderStore(sqlite3.connect(Path(DATA_DIR) / "dropship.db"))
@@ -114,7 +146,8 @@ def report(out=sys.stdout) -> None:
 def main(argv=None) -> None:
     cmd = (argv or sys.argv[1:] or ["candidates"])[0]
     {"research": research, "research-printful": lambda: research(supplier="printful"),
-     "candidates": show_candidates, "calendar": make_calendar, "report": report}[cmd]()
+     "candidates": show_candidates,
+     "providers": compare_providers, "calendar": make_calendar, "report": report}[cmd]()
 
 
 if __name__ == "__main__":

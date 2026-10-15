@@ -33,24 +33,45 @@ Why it fits: Etsy brings marketplace search traffic (no store to drive traffic t
 
 Run `python -m dropship.cli candidates`. Snapshot: `data/candidates.csv`.
 
+Printify token verified 2026-10-15: one shop, **"My new store" (id 29248056), sales channel `etsy`**, so an Etsy shop is connected to Printify. The shop has **0 products**, so no real production costs are available yet (Printify only shows cost on shop product variants, never in the catalog). Nothing was created.
+
 | Input | Etsy + Printify | Source |
 |---|---|---|
-| Shipping (US, first item) | tee $3.99, sweatshirt/hoodie $7.39, mug $5.79, stickers $4.29 | **Live** Printify catalog API, provider "Printify Choice" |
-| Handling time | up to 10 days | Live Printify catalog API |
-| Production cost | **Not yet known.** Uses the Printful price for the same blank as a labelled BENCHMARK (`status=cost_unverified`) | Needs `PRINTIFY_TOKEN` |
+| Shipping (US, first item) | tee $3.99, sweatshirt/hoodie $7.39, mug $5.79, stickers $4.29 | **Live** Printify catalog API, provider "Printify Choice" (99) |
+| Handling time | up to 10 days, every provider | Live Printify catalog API (same value for all providers, so not a differentiator) |
+| Production cost | **Not yet known.** Printful price for the same blank used as a labelled BENCHMARK (`status=cost_unverified`); Gildan 5000 has no benchmark (`needs_cost`) | Needs draft products in the Printify shop |
 | Etsy fees | 6.5% transaction (on price + shipping), 3% + $0.25 payment, $0.20 listing renewal per sale | Third-party 2026 guides; etsy.com/legal/fees blocked automated fetch |
 | Offsite Ads | 15% of an attributed order (opt-out allowed under $10k/yr sales; 12% and mandatory above) | Same |
 
-At typical Etsy prices (my assumption) with benchmark costs, *estimate*:
+**Provider comparison** (`python -m dropship.cli providers`, snapshot `data/printify_providers.json`). Printify Choice has the cheapest US shipping for all 7 blueprints, $0.20-0.90 less than the next provider:
 
-| Product | Price | Contribution before ads |
-|---|---|---|
-| Bella+Canvas 3001 tee | $27.99 | $8.18 (29%) |
-| Comfort Colors 1717 tee | $32.99 | $8.84 (27%) |
-| 11oz mug | $22.99 | $5.76 (25%) |
-| Gildan 18500 hoodie | $49.99 | $13.27 (27%) |
+| Blueprint | US providers | Best (US shipping) | Runner-up |
+|---|---|---|---|
+| 12 Bella+Canvas 3001 | 18 | Printify Choice $3.99 | Printful / Underground Threads / Monster Digital $4.49 |
+| 706 Comfort Colors 1717 | 10 | Printify Choice $3.99 | Printful / SwiftPOD $4.49 |
+| 6 Gildan 5000 | 19 | Printify Choice $3.99 | Underground Threads / Monster Digital $4.49 |
+| 49 Gildan 18000 crewneck | 16 | Printify Choice $7.39 | SwiftPOD / Printful $7.99 |
+| 77 Gildan 18500 hoodie | 15 | Printify Choice $7.39 | Underground Threads / SwiftPOD $7.99 |
+| 478 Mug 11/15oz | 6 | Printify Choice $5.79 | SwiftPOD / Monster Digital $6.69 |
+| 400 Kiss-cut stickers | 2 | Printify Choice $4.29 | SPOKE $4.49 |
 
-An Offsite Ads sale takes roughly another $4-7 per order. **Recommendation:** opt out of Offsite Ads while sales are under $10k/yr, unless tests show it brings profitable incremental orders. Real Printify costs (often lower than Printful) will replace the benchmark once connected.
+The final choice must also weigh production cost, which differs by provider and is still unknown.
+
+Estimates from `candidates` (suggested price, free shipping, benchmark costs, before ads):
+
+| Product | Cost (benchmark) | Price | Contribution | If Offsite Ads sale |
+|---|---|---|---|---|
+| Comfort Colors 1717 tee | $15.60 | $46.99 | $21.51 | $14.46 |
+| Bella+Canvas 3001 tee | $11.92 | $37.99 | $17.23 | $11.53 |
+| Gildan 18000 crewneck | $19.17 | $62.99 | $28.67 | $19.22 |
+| Gildan 18500 hoodie | $22.63 | $70.99 | $32.27 | $21.63 |
+| Mug 11/15oz | $8.11 | $33.99 | $15.72 | $10.62 |
+| Stickers | $2.74 | $17.99 | $8.45 | $5.75 |
+| Gildan 5000 tee | unknown | - | - | - |
+
+The suggested prices come from the target-margin formula and sit at the high end for Etsy; they have not been checked against competitors. **Recommendation:** opt out of Offsite Ads while sales are under $10k/yr, unless tests show it brings profitable incremental orders.
+
+**To get real costs:** either (a) you create one draft product per blueprint in Printify (any placeholder design, do not publish), then `PRINTIFY_SHOP_ID=29248056 python -m dropship.cli providers` writes `data/printify_costs.json`; or (b) you approve me creating unpublished drafts through the API, which needs a token with `products.write`.
 
 ## 4. Estimated costs (nothing purchased)
 
@@ -84,7 +105,7 @@ Tests: `python -m unittest dropship.tests.test_system` (44 tests, stdlib only). 
 |---|---|---|---|
 | 1 | Environment audit | Done | none |
 | 2 | Niche and product research | Engine done; provisional niche | Niche approval + demand evidence |
-| 3 | Supplier evaluation / unit economics | Printify shipping live; costs benchmarked | `PRINTIFY_TOKEN` (real costs, provider comparison) |
+| 3 | Supplier evaluation / unit economics | Token verified, Etsy shop connected, providers compared (Printify Choice best on shipping); costs still benchmarked | Draft products in Printify shop (real costs) |
 | 4 | Listings | Not started | Etsy shop + designs |
 | 5 | Fulfillment, support, analytics | Built, tested on mocks | Etsy + Printify credentials |
 | 6 | Marketing | Draft calendar | Designs, samples, social accounts |
@@ -98,7 +119,7 @@ Note: Etsy has no sandbox. The safe end-to-end test is a real order you pay for 
 1. **Approve or change the niche.**
 2. **Open an Etsy shop** (identity, bank and billing verification are yours to complete; I cannot do these).
 3. **Create a Printify account**, connect it to Etsy with Printify's official integration, and **set order approval to Manual**.
-4. **Printify API token:** Printify > My account > Connections > generate a personal access token. Add it as environment secret `PRINTIFY_TOKEN`, and the shop id as `PRINTIFY_SHOP_ID`. Don't paste tokens in chat.
+4. **Printify API token:** done 2026-10-15. Still to do: add environment secret `PRINTIFY_SHOP_ID` = `29248056`, and in Printify set order approval to **Manual**.
 5. **Etsy API (optional at first):** register an app at https://www.etsy.com/developers/register. Add the env secrets `ETSY_API_KEY` (`keystring:shared_secret`), `ETSY_OAUTH_TOKEN` and `ETSY_SHOP_ID`. Alternatively, connect Etsy through AnythingMCP (paid after its trial ends tomorrow). Printify's integration covers orders and tracking without this; the Etsy API is for reporting and support lookups.
 6. **Spending limits:** per order, per day, sample budget, ad budget ($0 default), refund authority (you approve all by default), maximum total loss, and Offsite Ads opt-out (recommended).
 7. **Designs:** original artwork, or approval for Canva/AI-assisted designs. Etsy's originality rules make your own design work important.

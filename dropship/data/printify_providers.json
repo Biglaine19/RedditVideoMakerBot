@@ -1,0 +1,793 @@
+{
+  "date": "2026-10-15",
+  "blueprints": {
+    "12": [
+      {
+        "provider_id": 99,
+        "title": "Printify Choice",
+        "country": "US",
+        "us_first_item": 3.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 410,
+        "title": "Printful",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 4.95,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 50,
+        "title": "Underground Threads",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 29,
+        "title": "Monster Digital",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 61,
+        "title": "Dimona Tee",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 217,
+        "title": "Fulfill Engine",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 39,
+        "title": "SwiftPOD",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 3,
+        "title": "Marco Fine Arts",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 52,
+        "title": "Stakes Manufacturing",
+        "country": "US",
+        "us_first_item": 5.39,
+        "us_additional_item": 2.19,
+        "us_first_item_max": 5.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 103,
+        "title": "Stacked Commerce",
+        "country": "US",
+        "us_first_item": 5.39,
+        "us_additional_item": 2.19,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 41,
+        "title": "Duplium",
+        "country": "CA",
+        "us_first_item": 20.39,
+        "us_additional_item": 2.89,
+        "us_first_item_max": 20.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 27,
+        "title": "Print Geek",
+        "country": "CA",
+        "us_first_item": 23.49,
+        "us_additional_item": 3.3,
+        "us_first_item_max": 23.49,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 402,
+        "title": "Atelier Katanga",
+        "country": "FR",
+        "us_first_item": 23.99,
+        "us_additional_item": 8.59,
+        "us_first_item_max": 23.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 331,
+        "title": "Shirt Monkey",
+        "country": "GB",
+        "us_first_item": 23.99,
+        "us_additional_item": 3.99,
+        "us_first_item_max": 23.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 72,
+        "title": "Print Clever",
+        "country": "GB",
+        "us_first_item": 23.99,
+        "us_additional_item": 3.99,
+        "us_first_item_max": 23.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 26,
+        "title": "Textildruck Europa",
+        "country": "DE",
+        "us_first_item": 26.59,
+        "us_additional_item": 6.59,
+        "us_first_item_max": 26.59,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 30,
+        "title": "OPT OnDemand",
+        "country": "CZ",
+        "us_first_item": 26.59,
+        "us_additional_item": 6.59,
+        "us_first_item_max": 26.59,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 6,
+        "title": "T Shirt and Sons",
+        "country": "GB",
+        "us_first_item": 37.29,
+        "us_additional_item": 6.19,
+        "us_first_item_max": 37.29,
+        "handling_days_max": 10
+      }
+    ],
+    "706": [
+      {
+        "provider_id": 99,
+        "title": "Printify Choice",
+        "country": "US",
+        "us_first_item": 3.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 4.95,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 410,
+        "title": "Printful",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 4.95,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 39,
+        "title": "SwiftPOD",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 4.95,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 29,
+        "title": "Monster Digital",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 4.95,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 61,
+        "title": "Dimona Tee",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 4.95,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 3,
+        "title": "Marco Fine Arts",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 4.95,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 217,
+        "title": "Fulfill Engine",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 5.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 52,
+        "title": "Stakes Manufacturing",
+        "country": "US",
+        "us_first_item": 5.39,
+        "us_additional_item": 2.19,
+        "us_first_item_max": 5.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 27,
+        "title": "Print Geek",
+        "country": "CA",
+        "us_first_item": 23.49,
+        "us_additional_item": 3.3,
+        "us_first_item_max": 23.49,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 331,
+        "title": "Shirt Monkey",
+        "country": "GB",
+        "us_first_item": 23.99,
+        "us_additional_item": 3.99,
+        "us_first_item_max": 23.99,
+        "handling_days_max": 10
+      }
+    ],
+    "6": [
+      {
+        "provider_id": 99,
+        "title": "Printify Choice",
+        "country": "US",
+        "us_first_item": 3.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 50,
+        "title": "Underground Threads",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 29,
+        "title": "Monster Digital",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 61,
+        "title": "Dimona Tee",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 39,
+        "title": "SwiftPOD",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 410,
+        "title": "Printful",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 4.95,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 217,
+        "title": "Fulfill Engine",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 3,
+        "title": "Marco Fine Arts",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 52,
+        "title": "Stakes Manufacturing",
+        "country": "US",
+        "us_first_item": 5.39,
+        "us_additional_item": 2.19,
+        "us_first_item_max": 5.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 103,
+        "title": "Stacked Commerce",
+        "country": "US",
+        "us_first_item": 5.39,
+        "us_additional_item": 2.19,
+        "us_first_item_max": 7.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 66,
+        "title": "Prima Printing",
+        "country": "AU",
+        "us_first_item": 14.49,
+        "us_additional_item": 13.89,
+        "us_first_item_max": 14.49,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 41,
+        "title": "Duplium",
+        "country": "CA",
+        "us_first_item": 20.39,
+        "us_additional_item": 2.89,
+        "us_first_item_max": 20.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 27,
+        "title": "Print Geek",
+        "country": "CA",
+        "us_first_item": 23.49,
+        "us_additional_item": 3.3,
+        "us_first_item_max": 23.49,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 331,
+        "title": "Shirt Monkey",
+        "country": "GB",
+        "us_first_item": 23.99,
+        "us_additional_item": 3.99,
+        "us_first_item_max": 23.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 402,
+        "title": "Atelier Katanga",
+        "country": "FR",
+        "us_first_item": 23.99,
+        "us_additional_item": 8.59,
+        "us_first_item_max": 23.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 72,
+        "title": "Print Clever",
+        "country": "GB",
+        "us_first_item": 23.99,
+        "us_additional_item": 3.99,
+        "us_first_item_max": 23.99,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 30,
+        "title": "OPT OnDemand",
+        "country": "CZ",
+        "us_first_item": 26.59,
+        "us_additional_item": 6.59,
+        "us_first_item_max": 26.59,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 26,
+        "title": "Textildruck Europa",
+        "country": "DE",
+        "us_first_item": 26.59,
+        "us_additional_item": 6.59,
+        "us_first_item_max": 26.59,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 6,
+        "title": "T Shirt and Sons",
+        "country": "GB",
+        "us_first_item": 37.29,
+        "us_additional_item": 6.19,
+        "us_first_item_max": 37.29,
+        "handling_days_max": 10
+      }
+    ],
+    "49": [
+      {
+        "provider_id": 99,
+        "title": "Printify Choice",
+        "country": "US",
+        "us_first_item": 7.39,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 39,
+        "title": "SwiftPOD",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 410,
+        "title": "Printful",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 61,
+        "title": "Dimona Tee",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 50,
+        "title": "Underground Threads",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 10.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 3,
+        "title": "Marco Fine Arts",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 29,
+        "title": "Monster Digital",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 217,
+        "title": "Fulfill Engine",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 10.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 66,
+        "title": "Prima Printing",
+        "country": "AU",
+        "us_first_item": 21.49,
+        "us_additional_item": 20.59,
+        "us_first_item_max": 21.49,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 41,
+        "title": "Duplium",
+        "country": "CA",
+        "us_first_item": 27.49,
+        "us_additional_item": 2.99,
+        "us_first_item_max": 27.49,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 27,
+        "title": "Print Geek",
+        "country": "CA",
+        "us_first_item": 28.09,
+        "us_additional_item": 3.29,
+        "us_first_item_max": 28.09,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 402,
+        "title": "Atelier Katanga",
+        "country": "FR",
+        "us_first_item": 31.19,
+        "us_additional_item": 13.99,
+        "us_first_item_max": 31.19,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 72,
+        "title": "Print Clever",
+        "country": "GB",
+        "us_first_item": 31.19,
+        "us_additional_item": 9.99,
+        "us_first_item_max": 31.19,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 331,
+        "title": "Shirt Monkey",
+        "country": "GB",
+        "us_first_item": 31.19,
+        "us_additional_item": 9.99,
+        "us_first_item_max": 31.19,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 26,
+        "title": "Textildruck Europa",
+        "country": "DE",
+        "us_first_item": 33.79,
+        "us_additional_item": 13.99,
+        "us_first_item_max": 33.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 6,
+        "title": "T Shirt and Sons",
+        "country": "GB",
+        "us_first_item": 46.79,
+        "us_additional_item": 7.99,
+        "us_first_item_max": 46.79,
+        "handling_days_max": 10
+      }
+    ],
+    "77": [
+      {
+        "provider_id": 99,
+        "title": "Printify Choice",
+        "country": "US",
+        "us_first_item": 7.39,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 50,
+        "title": "Underground Threads",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 10.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 39,
+        "title": "SwiftPOD",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 29,
+        "title": "Monster Digital",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 3,
+        "title": "Marco Fine Arts",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 410,
+        "title": "Printful",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 217,
+        "title": "Fulfill Engine",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 10.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 61,
+        "title": "Dimona Tee",
+        "country": "US",
+        "us_first_item": 7.99,
+        "us_additional_item": 2.09,
+        "us_first_item_max": 8.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 66,
+        "title": "Prima Printing",
+        "country": "AU",
+        "us_first_item": 21.49,
+        "us_additional_item": 20.59,
+        "us_first_item_max": 21.49,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 41,
+        "title": "Duplium",
+        "country": "CA",
+        "us_first_item": 27.49,
+        "us_additional_item": 2.99,
+        "us_first_item_max": 27.49,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 27,
+        "title": "Print Geek",
+        "country": "CA",
+        "us_first_item": 28.09,
+        "us_additional_item": 3.29,
+        "us_first_item_max": 28.09,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 402,
+        "title": "Atelier Katanga",
+        "country": "FR",
+        "us_first_item": 31.19,
+        "us_additional_item": 13.99,
+        "us_first_item_max": 31.19,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 72,
+        "title": "Print Clever",
+        "country": "GB",
+        "us_first_item": 31.19,
+        "us_additional_item": 9.99,
+        "us_first_item_max": 31.19,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 26,
+        "title": "Textildruck Europa",
+        "country": "DE",
+        "us_first_item": 33.79,
+        "us_additional_item": 13.99,
+        "us_first_item_max": 33.79,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 6,
+        "title": "T Shirt and Sons",
+        "country": "GB",
+        "us_first_item": 46.79,
+        "us_additional_item": 7.99,
+        "us_first_item_max": 46.79,
+        "handling_days_max": 10
+      }
+    ],
+    "478": [
+      {
+        "provider_id": 99,
+        "title": "Printify Choice",
+        "country": "US",
+        "us_first_item": 5.79,
+        "us_additional_item": 2.99,
+        "us_first_item_max": 9.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 39,
+        "title": "SwiftPOD",
+        "country": "US",
+        "us_first_item": 6.69,
+        "us_additional_item": 2.99,
+        "us_first_item_max": 9.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 29,
+        "title": "Monster Digital",
+        "country": "US",
+        "us_first_item": 6.69,
+        "us_additional_item": 2.99,
+        "us_first_item_max": 9.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 410,
+        "title": "Printful",
+        "country": "US",
+        "us_first_item": 8.29,
+        "us_additional_item": 2.99,
+        "us_first_item_max": 9.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 1,
+        "title": "SPOKE Custom Products",
+        "country": "US",
+        "us_first_item": 8.69,
+        "us_additional_item": 2.99,
+        "us_first_item_max": 9.39,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 28,
+        "title": "District Photo",
+        "country": "US",
+        "us_first_item": 8.69,
+        "us_additional_item": 2.99,
+        "us_first_item_max": 9.39,
+        "handling_days_max": 10
+      }
+    ],
+    "400": [
+      {
+        "provider_id": 99,
+        "title": "Printify Choice",
+        "country": "US",
+        "us_first_item": 4.29,
+        "us_additional_item": 0.09,
+        "us_first_item_max": 4.59,
+        "handling_days_max": 10
+      },
+      {
+        "provider_id": 1,
+        "title": "SPOKE Custom Products",
+        "country": "US",
+        "us_first_item": 4.49,
+        "us_additional_item": 0.09,
+        "us_first_item_max": 4.79,
+        "handling_days_max": 10
+      }
+    ]
+  }
+}
