@@ -108,7 +108,7 @@ Tests: `python -m unittest dropship.tests.test_system` (44 tests, stdlib only). 
 | 1 | Environment audit | Done | none |
 | 2 | Niche and product research | Niche approved 2026-10-15: houseplant lovers | Demand evidence |
 | 3 | Supplier evaluation / unit economics | Done: real Printify costs, Printify Choice cheapest US shipping | none |
-| 4 | Listings | Designs v1 done (`designs/`, 4 designs x tee/mug/sticker) | Trademark check, cost drafts, Etsy shop setup |
+| 4 | Listings | Designs v1 done; trademark screen: 3 clear, Propagation Station on hold (registered mark) | Etsy shop setup, Manual order approval |
 | 5 | Fulfillment, support, analytics | Built, tested on mocks | Etsy + Printify credentials |
 | 6 | Marketing | Draft calendar | Designs, samples, social accounts |
 | 7 | End-to-end test | Simulated only | One real sample order (your approval) |
