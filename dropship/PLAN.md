@@ -104,13 +104,13 @@ Tests: `python -m unittest dropship.tests.test_system` (44 tests, stdlib only). 
 | # | Milestone | Status | Blocked on |
 |---|---|---|---|
 | 1 | Environment audit | Done | none |
-| 2 | Niche and product research | Engine done; provisional niche | Niche approval + demand evidence |
+| 2 | Niche and product research | Niche approved 2026-10-15: houseplant lovers | Demand evidence |
 | 3 | Supplier evaluation / unit economics | Token verified, Etsy shop connected, providers compared (Printify Choice best on shipping); costs still benchmarked | Draft products in Printify shop (real costs) |
-| 4 | Listings | Not started | Etsy shop + designs |
+| 4 | Listings | Designs v1 done (`designs/`, 4 designs x tee/mug/sticker) | Trademark check, cost drafts, Etsy shop setup |
 | 5 | Fulfillment, support, analytics | Built, tested on mocks | Etsy + Printify credentials |
 | 6 | Marketing | Draft calendar | Designs, samples, social accounts |
 | 7 | End-to-end test | Simulated only | One real sample order (your approval) |
-| 8-10 | Launch, live ops, optimisation | Not started | Approvals + limits |
+| 8-10 | Launch, live ops, optimisation | Not started | Budget: owner set $0 on 2026-10-15 (no ads, no paid samples; all spending limits stay 0) |
 
 Note: Etsy has no sandbox. The safe end-to-end test is a real order you pay for yourself (as a sample), or a Printify draft that is never sent to production.
 

@@ -22,7 +22,7 @@ from .research import candidates as cand
 from .research import printify_catalog as pfy
 from .research.candidates import Spec
 
-# PROVISIONAL niche pending owner approval. Video-fit / quality / IP scores are
+# Niche approved by owner 2026-10-15. Video-fit / quality / IP scores are
 # analyst judgement (1-5), not measured data.
 NICHE = "houseplant-lovers"
 AUDIENCE = "plant parent"
