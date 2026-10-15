@@ -1,0 +1,44 @@
+{
+  "400": {
+    "cost": 1.42,
+    "cost_max": 2.32,
+    "source": "printify shop 29248056 product 6ad1105fbb6fcb0f6a0c1cde (provider 99)",
+    "date": "2026-10-15"
+  },
+  "478": {
+    "cost": 5.03,
+    "cost_max": 6.13,
+    "source": "printify shop 29248056 product 6ad1105d5e52da815c0aa957 (provider 99)",
+    "date": "2026-10-15"
+  },
+  "77": {
+    "cost": 21.58,
+    "cost_max": 25.66,
+    "source": "printify shop 29248056 product 6ad1105af81cd42921039e0c (provider 99)",
+    "date": "2026-10-15"
+  },
+  "49": {
+    "cost": 17.87,
+    "cost_max": 25.17,
+    "source": "printify shop 29248056 product 6ad11058210a7ce1c702c803 (provider 99)",
+    "date": "2026-10-15"
+  },
+  "6": {
+    "cost": 9.68,
+    "cost_max": 13.47,
+    "source": "printify shop 29248056 product 6ad110555e52da815c0aa946 (provider 99)",
+    "date": "2026-10-15"
+  },
+  "706": {
+    "cost": 12.65,
+    "cost_max": 18.34,
+    "source": "printify shop 29248056 product 6ad1105202e855b98e012ed1 (provider 99)",
+    "date": "2026-10-15"
+  },
+  "12": {
+    "cost": 11.29,
+    "cost_max": 20.44,
+    "source": "printify shop 29248056 product 6ad1104e02e855b98e012ec3 (provider 99)",
+    "date": "2026-10-15"
+  }
+}

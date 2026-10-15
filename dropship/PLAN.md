@@ -33,13 +33,13 @@ Why it fits: Etsy brings marketplace search traffic (no store to drive traffic t
 
 Run `python -m dropship.cli candidates`. Snapshot: `data/candidates.csv`.
 
-Printify token verified 2026-10-15: one shop, **"My new store" (id 29248056), sales channel `etsy`**, so an Etsy shop is connected to Printify. The shop has **0 products**, so no real production costs are available yet (Printify only shows cost on shop product variants, never in the catalog). Nothing was created.
+Printify token verified 2026-10-15: one shop, **"My new store" (id 29248056), sales channel `etsy`**. With the owner's approval, 7 unpublished drafts titled "Cost check - do not publish" (Rooted & Thriving art, Printify Choice) were created to read **real production costs**; none is published to Etsy or ordered.
 
 | Input | Etsy + Printify | Source |
 |---|---|---|
 | Shipping (US, first item) | tee $3.99, sweatshirt/hoodie $7.39, mug $5.79, stickers $4.29 | **Live** Printify catalog API, provider "Printify Choice" (99) |
 | Handling time | up to 10 days, every provider | Live Printify catalog API (same value for all providers, so not a differentiator) |
-| Production cost | **Not yet known.** Printful price for the same blank used as a labelled BENCHMARK (`status=cost_unverified`); Gildan 5000 has no benchmark (`needs_cost`) | Needs draft products in the Printify shop |
+| Production cost (base size / largest size) | B+C 3001 $11.29 / $20.44 (5XL); CC 1717 $12.65 / $18.34; Gildan 5000 $9.68 / $13.47; crewneck $17.87 / $25.17; hoodie $21.58 / $25.66; mug 11oz $5.03 (15oz $6.13); stickers $1.42 (smallest) / $2.32 (largest) | **Live** Printify cost from shop drafts, `data/printify_costs.json` |
 | Etsy fees | 6.5% transaction (on price + shipping), 3% + $0.25 payment, $0.20 listing renewal per sale | Third-party 2026 guides; etsy.com/legal/fees blocked automated fetch |
 | Offsite Ads | 15% of an attributed order (opt-out allowed under $10k/yr sales; 12% and mandatory above) | Same |
 
@@ -57,21 +57,23 @@ Printify token verified 2026-10-15: one shop, **"My new store" (id 29248056), sa
 
 The final choice must also weigh production cost, which differs by provider and is still unknown.
 
-Estimates from `candidates` (suggested price, free shipping, benchmark costs, before ads):
+Estimates from `candidates` (suggested price, free shipping, **real Printify base-size costs**, before ads):
 
-| Product | Cost (benchmark) | Price | Contribution | If Offsite Ads sale |
+| Product | Cost | Price | Contribution | If Offsite Ads sale |
 |---|---|---|---|---|
-| Comfort Colors 1717 tee | $15.60 | $46.99 | $21.51 | $14.46 |
-| Bella+Canvas 3001 tee | $11.92 | $37.99 | $17.23 | $11.53 |
-| Gildan 18000 crewneck | $19.17 | $62.99 | $28.67 | $19.22 |
-| Gildan 18500 hoodie | $22.63 | $70.99 | $32.27 | $21.63 |
-| Mug 11/15oz | $8.11 | $33.99 | $15.72 | $10.62 |
-| Stickers | $2.74 | $17.99 | $8.45 | $5.75 |
-| Gildan 5000 tee | unknown | - | - | - |
+| Comfort Colors 1717 tee | $12.65 | $39.99 | $18.27 | $12.27 |
+| Bella+Canvas 3001 tee | $11.29 | $36.99 | $16.98 | $11.43 |
+| Gildan 18000 crewneck | $17.87 | $59.99 | $27.32 | $18.32 |
+| Gildan 18500 hoodie | $21.58 | $67.99 | $30.66 | $20.46 |
+| Gildan 5000 tee | $9.68 | $32.99 | $15.05 | $10.10 |
+| Mug 11oz | $5.03 | $25.99 | $11.71 | $7.81 |
+| Stickers (smallest) | $1.42 | $14.99 | $7.12 | $4.87 |
+
+Plus sizes cost up to $9 more (B+C 3001 5XL $20.44), so set higher Etsy variant prices for 2XL+ rather than one price for all sizes.
 
 The suggested prices come from the target-margin formula and sit at the high end for Etsy; they have not been checked against competitors. **Recommendation:** opt out of Offsite Ads while sales are under $10k/yr, unless tests show it brings profitable incremental orders.
 
-**To get real costs:** either (a) you create one draft product per blueprint in Printify (any placeholder design, do not publish), then `PRINTIFY_SHOP_ID=29248056 python -m dropship.cli providers` writes `data/printify_costs.json`; or (b) you approve me creating unpublished drafts through the API, which needs a token with `products.write`.
+**Cost drafts:** the 7 drafts stay in the Printify shop as unpublished references; delete them or turn them into real listings later. Re-read costs any time with `PRINTIFY_SHOP_ID=29248056 python -m dropship.cli providers`.
 
 ## 4. Estimated costs (nothing purchased)
 
@@ -105,7 +107,7 @@ Tests: `python -m unittest dropship.tests.test_system` (44 tests, stdlib only). 
 |---|---|---|---|
 | 1 | Environment audit | Done | none |
 | 2 | Niche and product research | Niche approved 2026-10-15: houseplant lovers | Demand evidence |
-| 3 | Supplier evaluation / unit economics | Token verified, Etsy shop connected, providers compared (Printify Choice best on shipping); costs still benchmarked | Draft products in Printify shop (real costs) |
+| 3 | Supplier evaluation / unit economics | Done: real Printify costs, Printify Choice cheapest US shipping | none |
 | 4 | Listings | Designs v1 done (`designs/`, 4 designs x tee/mug/sticker) | Trademark check, cost drafts, Etsy shop setup |
 | 5 | Fulfillment, support, analytics | Built, tested on mocks | Etsy + Printify credentials |
 | 6 | Marketing | Draft calendar | Designs, samples, social accounts |

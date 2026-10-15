@@ -137,15 +137,19 @@ class PrintifyResearchTest(unittest.TestCase):
         self.assertEqual([r["provider_id"] for r in rows], [2, 1])
         self.assertEqual(rows[0]["country"], "US")
 
-    def test_costs_from_shop_median_of_enabled_variants(self):
+    def test_costs_from_shop_base_and_top_of_enabled_variants(self):
         from dropship.research import printify_catalog as pfy
         res = {"data": [{"id": "p1", "blueprint_id": 12, "print_provider_id": 99, "variants": [
             {"cost": 900, "is_enabled": True}, {"cost": 1100, "is_enabled": True},
             {"cost": 5000, "is_enabled": False}]}, {"id": "p2", "blueprint_id": 6, "print_provider_id": 99,
                                                     "variants": []}]}
         costs = pfy.costs_from_shop("s", "t", http=lambda url, headers: res, today="2026-10-15")
-        self.assertEqual(costs, {"12": {"cost": 10.0, "source": "printify shop s product p1 (provider 99)",
+        self.assertEqual(costs, {"12": {"cost": 9.0, "cost_max": 11.0,
+                                        "source": "printify shop s product p1 (provider 99)",
                                         "date": "2026-10-15"}})
+        cost, label = pfy.resolve_cost(12, None, costs)
+        self.assertEqual(cost, 9.0)
+        self.assertTrue(label.startswith("printify live cost"))
 
     def test_throttle_spaces_calls(self):
         from dropship.research import printify_catalog as pfy

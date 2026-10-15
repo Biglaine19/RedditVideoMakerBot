@@ -124,17 +124,17 @@ def shop_product_costs(shop_id: str, product_id: str, token: str, http=http_json
 
 
 def costs_from_shop(shop_id: str, token: str, http=http_json, today: str | None = None) -> dict:
-    """Median enabled-variant cost per blueprint from existing shop products, in the
-    data/printify_costs.json format. Read-only: never creates products."""
+    """Base (cheapest enabled variant, e.g. S-XL) and top cost per blueprint from existing
+    shop products, in the data/printify_costs.json format. Read-only: never creates products."""
     from datetime import date
-    from statistics import median
     res = http(f"{API}/shops/{shop_id}/products.json?limit=50", headers={"Authorization": f"Bearer {token}"})
     out = {}
     for prod in res["data"]:
         costs = [v["cost"] / 100 for v in prod["variants"] if v.get("is_enabled", True) and v.get("cost")]
         if costs:
             out[str(prod["blueprint_id"])] = {
-                "cost": round(median(costs), 2),
+                "cost": round(min(costs), 2),
+                "cost_max": round(max(costs), 2),
                 "source": f"printify shop {shop_id} product {prod['id']} (provider {prod['print_provider_id']})",
                 "date": today or date.today().isoformat(),
             }
@@ -145,6 +145,8 @@ def resolve_cost(blueprint_id: int, printful_benchmark_id: int | None, manual: d
                  printful_fetch=pf.get_product) -> tuple[float | None, str]:
     """Best available cost and its provenance label."""
     entry = manual.get(str(blueprint_id))
+    if entry and entry["source"].startswith("printify shop"):
+        return float(entry["cost"]), f"printify live cost: {entry['source']} ({entry['date']})"
     if entry:
         return float(entry["cost"]), f"owner-entered: {entry['source']} ({entry['date']})"
     if printful_benchmark_id:
